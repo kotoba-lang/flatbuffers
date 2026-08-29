@@ -34,6 +34,29 @@ if [[ ! -f "${KOTOBA_BIN}" || -d "${KOTOBA_BIN}" ]]; then
   fail "kotoba resolved to a directory, not the 0.7.2 CLI (${KOTOBA_BIN})"
 fi
 
+# install.sh puts a POSIX wrapper on PATH. Hash the ELF, not the wrapper.
+if [[ -L "${KOTOBA_BIN}" ]]; then
+  KOTOBA_BIN="$(readlink -f "${KOTOBA_BIN}")"
+fi
+if ! python3 -c 'import sys; sys.exit(0 if open(sys.argv[1],"rb").read(4)==b"\x7fELF" else 1)' "${KOTOBA_BIN}"; then
+  installed_elf="${KOTOBA_HOME:-$HOME/.local/share/kotoba}/v0.7.2/kotoba"
+  if [[ -f "${installed_elf}" ]]; then
+    KOTOBA_BIN="${installed_elf}"
+  fi
+fi
+if [[ ! -f "${KOTOBA_BIN}" || -d "${KOTOBA_BIN}" ]]; then
+  fail "kotoba resolved to a directory, not the 0.7.2 CLI (${KOTOBA_BIN})"
+fi
+
+CURRENT_LINK="${KOTOBA_HOME:-$HOME/.local/share/kotoba}/current"
+if [[ -L "${CURRENT_LINK}" ]]; then
+  INSTALLED="$(readlink "${CURRENT_LINK}")"
+  printf 'kotoba install current: %s\n' "${INSTALLED}"
+  if [[ "${INSTALLED}" != "v0.7.2" ]]; then
+    fail "refusing kotoba ${INSTALLED} (need v0.7.2)"
+  fi
+fi
+
 if [[ ! -f "${SRC}" ]]; then
   fail "missing module ${SRC}"
 fi
