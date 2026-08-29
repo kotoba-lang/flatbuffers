@@ -9,9 +9,15 @@ on:
       - "*" # new tag version, like `0.8.4` or else
     branches:
       - master
+    paths-ignore:
+      - 'kotoba/**'
+      - '.github/workflows/kotoba*.yml'
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - 'kotoba/**'
+      - '.github/workflows/kotoba*.yml'
   schedule:
     # Run daily at 4:45 A.M. to catch dependencies that break us.
     - cron: '45 4 * * *'
